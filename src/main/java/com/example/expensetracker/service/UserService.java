@@ -52,10 +52,17 @@ public class UserService implements UserDetailsService {
     }
 
 
-    return new org.springframework.security.core.userdetails.User(
+   /* return new org.springframework.security.core.userdetails.User(
         user.getUsername(),
         user.getPassword(),
-        Collections.emptyList()
-    );
+        Collections.emptyList() // user has no granted authorities
+        // if our application uses roles or permissions, we should then return a list of `GrantedAuthority`
+    );  */
+
+    return org.springframework.security.core.userdetails.User
+        .withUsername(user.getUsername())
+        .password(user.getPassword())
+        .authorities("USER") // We  can add set roles/authorities here
+        .build();
   }
 }

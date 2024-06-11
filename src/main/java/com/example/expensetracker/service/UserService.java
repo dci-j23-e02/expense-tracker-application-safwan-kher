@@ -3,7 +3,7 @@ package com.example.expensetracker.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import java.util.Collections;
+// import java.util.Collections;
 import com.example.expensetracker.models.User;
 import com.example.expensetracker.repositories.UserRepository;
 import jakarta.transaction.Transactional;

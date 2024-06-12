@@ -15,6 +15,13 @@ public class UserController {
   @Autowired
   private UserService userService;
 
+
+  @GetMapping("/")
+  public String home(){
+    return "home";
+  }
+
+
   @GetMapping("/login")
   public String login(Model model){
     model.addAttribute("errorMessage", "Invalid Credentials !!" );

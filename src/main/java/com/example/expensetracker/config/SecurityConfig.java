@@ -16,8 +16,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 @EnableWebSecurity
 public class SecurityConfig {
 
-  @Autowired
-  private CustomLogoutSuccessHandler customLogoutSuccessHandler;
+
 
   @Bean
   public UserDetailsService userDetailsService(UserService userService){
@@ -39,19 +38,13 @@ public class SecurityConfig {
             .defaultSuccessUrl("/", true)
             .permitAll()
         )
-        .logout(logout -> logout
-            .logoutUrl("/logout")
-            .logoutSuccessHandler(customLogoutSuccessHandler)
-            .deleteCookies("JSESSIONID")
-            .invalidateHttpSession(true)
-            .permitAll()
-        )
-        .headers(headers -> headers
-            .cacheControl(cache -> cache.disable())
-        )
-        .sessionManagement(sessionManagement -> sessionManagement
-            .invalidSessionUrl("/login?invalid-session=true")
-        );
+        .logout()
+        .logoutUrl("/logout")
+        .logoutSuccessUrl("/login?logout")
+        .invalidateHttpSession(true) // This is the default behavior
+     //   .deleteCookies("JSESSIONID") // Optional, as session invalidation already removes the cookie
+        .permitAll();
+
 
     return http.build();
   }

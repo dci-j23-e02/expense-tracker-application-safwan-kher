@@ -16,9 +16,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 @EnableWebSecurity
 public class SecurityConfig {
 
+  @Autowired
+  private CustomLogoutSuccessHandler customLogoutSuccessHandler;
+
   @Bean
   public UserDetailsService userDetailsService(UserService userService){
-    return userService;
+        return userService;
   }
 
 
@@ -38,10 +41,16 @@ public class SecurityConfig {
         )
         .logout(logout -> logout
             .logoutUrl("/logout")
-            .logoutSuccessUrl("/login?logout")
+            .logoutSuccessHandler(customLogoutSuccessHandler)
             .deleteCookies("JSESSIONID")
             .invalidateHttpSession(true)
             .permitAll()
+        )
+        .headers(headers -> headers
+            .cacheControl(cache -> cache.disable())
+        )
+        .sessionManagement(sessionManagement -> sessionManagement
+            .invalidSessionUrl("/login?invalid-session=true")
         );
 
     return http.build();

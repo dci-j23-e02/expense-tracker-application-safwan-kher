@@ -30,7 +30,8 @@ public class UserController {
 
 
   @GetMapping("/logout")
-  public String logout(){
+  public String logout() {
+
     return "redirect:/login?logout"; // Redirect to login page with logout parameter
   }
 

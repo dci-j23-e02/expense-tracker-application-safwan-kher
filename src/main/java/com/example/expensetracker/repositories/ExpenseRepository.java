@@ -53,6 +53,15 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
   @Query("DELETE FROM Expense e WHERE e.id = ?1")
   void deleteExpenseById(Long id);
 
+  @Query("SELECT e FROM  Expense e WHERE e.user.id=?1")
+  List<Expense> findAllExpensesByUser(Long userId);
+
+
+  @Modifying
+  @Query("DELETE FROM Expense e WHERE e.date BETWEEN ?1 AND ?2 AND e.user.id=?3")
+  void deleteExpensesByDateRangeAndUser(LocalDate startDate, LocalDate endDate, Long userId);
+
+
 
 }
 

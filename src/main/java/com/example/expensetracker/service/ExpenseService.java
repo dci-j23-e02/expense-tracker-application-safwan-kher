@@ -86,7 +86,14 @@ public class ExpenseService {
 
 
 
+public List<Expense> findAllExpensesByUser(Long userId){
+    return expenseRepository.findAllExpensesByUser(userId);
+}
 
+  @Transactional
+public  void deleteExpensesByDateRangeAndUser(LocalDate startDate, LocalDate endDate, Long userId){
+    expenseRepository.deleteExpensesByDateRangeAndUser(startDate, endDate, userId);
+}
 
 
 

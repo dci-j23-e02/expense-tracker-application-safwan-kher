@@ -23,6 +23,9 @@ public class User {
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   private Set<Expense> expenses;
 
+  @Column(nullable = false)
+  private boolean verified=false;
+
   public User() {
   }
 
@@ -81,5 +84,13 @@ public class User {
 
   public void setExpenses(Set<Expense> expenses) {
     this.expenses = expenses;
+  }
+
+  public boolean isVerified() {
+    return verified;
+  }
+
+  public void setVerified(boolean verified) {
+    this.verified = verified;
   }
 }

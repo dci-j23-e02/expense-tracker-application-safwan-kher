@@ -12,7 +12,7 @@ public class VerificationToken {
   @Column(name = "id", nullable = false)
   private Long id;
 
-  @Column(nullable = false)
+  @Column(nullable = false, unique = true)
   private String token;
 
   @OneToOne(targetEntity = User.class, fetch = FetchType.EAGER)

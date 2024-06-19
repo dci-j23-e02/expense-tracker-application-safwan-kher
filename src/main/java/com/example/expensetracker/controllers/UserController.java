@@ -43,8 +43,13 @@ public class UserController {
   }
 
   @PostMapping("/signup")
-  public String signup(User user){
-    userService.saveUser(user);
+  public String signup(User user, Model model){
+    boolean isUserSaved =  userService.saveUser(user);
+    if(!isUserSaved){
+      model.addAttribute("errorMessage",
+          "Failed to send verification email. Please add a correct email !");
+      return "redirect:/signup";
+    }
     return "redirect:/login";
 
   }

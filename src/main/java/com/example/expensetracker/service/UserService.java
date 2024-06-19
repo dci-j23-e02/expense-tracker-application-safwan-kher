@@ -5,6 +5,7 @@ import com.example.expensetracker.repositories.VerificationTokenRepository;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -34,10 +35,21 @@ public class UserService implements UserDetailsService {
 
 
   @Transactional
-  public void saveUser(User user){
+  public boolean saveUser(User user){
     user.setPassword(passwordEncoder.encode(user.getPassword()));
-    userRepository.save(user);
-    sendVerificationEmail(user);
+   try{
+
+     userRepository.save(user);
+     sendVerificationEmail(user);
+
+
+   }catch(MailException e){ // MailException will be thrown if the email is not sent
+     //Log the exception (optional)
+     System.out.println("Failed to send verification email:"+e.getMessage());
+     return false;
+   }
+
+    return true;
   }
 
 
@@ -46,6 +58,9 @@ public class UserService implements UserDetailsService {
     return userRepository.findByUsername(username);
   }
 
+  public User findByEmail(String email) {
+    return userRepository.findByEmail(email);
+  }
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -55,7 +70,9 @@ public class UserService implements UserDetailsService {
     if(user == null){
       throw new UsernameNotFoundException("User not found");
     }
-
+    if(!user.isVerified()){
+      throw new UsernameNotFoundException("User email is not verified");
+    }
     return org.springframework.security.core.userdetails.User
         .withUsername(user.getUsername())
         .password(user.getPassword())
@@ -90,7 +107,7 @@ public class UserService implements UserDetailsService {
     }
   }
 
-  private void sendVerificationEmail(User user) {
+  private void sendVerificationEmail(User user) throws MailException {
     String token = UUID.randomUUID().toString();
     createVerificationToken(user, token);
 

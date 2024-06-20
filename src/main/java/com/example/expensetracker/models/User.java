@@ -26,24 +26,34 @@ public class User {
   @Column(nullable = false)
   private boolean verified=false;
 
+
+  @ElementCollection(fetch = FetchType.EAGER)
+  @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name ="user_id"))
+  @Column(name = "role")
+  private Set<String> roles;
+
   public User() {
   }
 
   public User(Long id, String username, String email, String password,
-      Set<Expense> expenses) {
+      Set<Expense> expenses, boolean verified, Set<String> roles) {
     this.id = id;
     this.username = username;
     this.email = email;
     this.password = password;
     this.expenses = expenses;
+    this.verified = verified;
+    this.roles = roles;
   }
 
   public User(String username, String email, String password,
-      Set<Expense> expenses) {
+      Set<Expense> expenses, boolean verified, Set<String> roles) {
     this.username = username;
     this.email = email;
     this.password = password;
     this.expenses = expenses;
+    this.verified = verified;
+    this.roles = roles;
   }
 
   public Long getId() {
@@ -92,5 +102,13 @@ public class User {
 
   public void setVerified(boolean verified) {
     this.verified = verified;
+  }
+
+  public Set<String> getRoles() {
+    return roles;
+  }
+
+  public void setRoles(Set<String> roles) {
+    this.roles = roles;
   }
 }

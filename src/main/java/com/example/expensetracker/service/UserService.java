@@ -3,6 +3,8 @@ package com.example.expensetracker.service;
 import com.example.expensetracker.models.VerificationToken;
 import com.example.expensetracker.repositories.VerificationTokenRepository;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailException;
@@ -37,21 +39,19 @@ public class UserService implements UserDetailsService {
   @Transactional
   public boolean saveUser(User user){
     user.setPassword(passwordEncoder.encode(user.getPassword()));
+    Set<String> roles = new HashSet<>();
+    roles.add("USER");
+    user.setRoles(roles);
    try{
-
      userRepository.save(user);
      sendVerificationEmail(user);
-
-
    }catch(MailException e){ // MailException will be thrown if the email is not sent
      //Log the exception (optional)
      System.out.println("Failed to send verification email:"+e.getMessage());
      return false;
    }
-
     return true;
   }
-
 
 
   public User findByUsername(String username){
@@ -70,13 +70,16 @@ public class UserService implements UserDetailsService {
     if(user == null){
       throw new UsernameNotFoundException("User not found");
     }
-    if(!user.isVerified()){
-      throw new UsernameNotFoundException("User email is not verified");
-    }
+//    .accountLocked(!user.isVerified()) : is alternative of the below
+//    if(!user.isVerified()){
+//      throw new UsernameNotFoundException("User email is not verified");
+//    }
+
     return org.springframework.security.core.userdetails.User
         .withUsername(user.getUsername())
         .password(user.getPassword())
-        .authorities("USER") // We  can add set roles/authorities here
+        .authorities(user.getRoles().toArray(new String[0])) // We  can add set roles/authorities here
+        .accountLocked(!user.isVerified())
         .build();
   }
 

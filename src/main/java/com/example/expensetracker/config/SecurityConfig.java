@@ -29,7 +29,7 @@ public class SecurityConfig {
     http
         .authorizeHttpRequests(
             authorizeRequests -> authorizeRequests
-                .requestMatchers("/signup", "/login", "/verify").permitAll()
+                .requestMatchers("/signup", "/login", "/verify", "/assign-admin").permitAll()
                 .requestMatchers("/currency-converter").hasRole("ADMIN")
                 .anyRequest().authenticated()
         )

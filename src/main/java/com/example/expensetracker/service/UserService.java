@@ -6,10 +6,13 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import com.example.expensetracker.models.User;
@@ -40,7 +43,7 @@ public class UserService implements UserDetailsService {
   public boolean saveUser(User user){
     user.setPassword(passwordEncoder.encode(user.getPassword()));
     Set<String> roles = new HashSet<>();
-    roles.add("USER");
+    roles.add("ROLE_USER");
     user.setRoles(roles);
    try{
      userRepository.save(user);
@@ -70,6 +73,11 @@ public class UserService implements UserDetailsService {
     if(user == null){
       throw new UsernameNotFoundException("User not found");
     }
+
+    // log user details:
+    System.out.println("User found "+ user.getUsername()+
+        " , Verified:"+user.isVerified() +
+        ",  Roles: "+ user.getRoles());
 //    .accountLocked(!user.isVerified()) : is alternative of the below
 //    if(!user.isVerified()){
 //      throw new UsernameNotFoundException("User email is not verified");
@@ -78,16 +86,26 @@ public class UserService implements UserDetailsService {
     return org.springframework.security.core.userdetails.User
         .withUsername(user.getUsername())
         .password(user.getPassword())
-        .authorities(user.getRoles().toArray(new String[0])) // We  can add set roles/authorities here
+
+        .authorities(
+            user.getRoles()
+                .stream()
+                .map(SimpleGrantedAuthority :: new)
+                .collect(Collectors.toList())
+        ) // Convert roles to authorities
+
         .accountLocked(!user.isVerified())
         .build();
   }
 
 
-  public void createVerificationToken(User user, String token){
-    VerificationToken verificationToken = new VerificationToken();
+  public void createOrUpdateVerificationToken(User user, String token){
+    VerificationToken verificationToken = tokenRepository.findByUsername(user.getUsername());
+    if(verificationToken == null){
+      verificationToken = new VerificationToken();
+      verificationToken.setUser(user);
+    }
     verificationToken.setToken(token);
-    verificationToken.setUser(user);
     verificationToken.setExpiryDate(LocalDateTime.now().plusDays(1));
     tokenRepository.save(verificationToken);
   }
@@ -106,13 +124,13 @@ public class UserService implements UserDetailsService {
       User user = verificationToken.getUser();
       user.setVerified(true);
       userRepository.save(user);
-     // tokenRepository.delete(verificationToken); // we might keep it for our future logs
+      tokenRepository.delete(verificationToken); // we might keep it for our future logs
     }
   }
 
   private void sendVerificationEmail(User user) throws MailException {
     String token = UUID.randomUUID().toString();
-    createVerificationToken(user, token);
+    createOrUpdateVerificationToken(user, token);
 
     String recipientAddress = user.getEmail();
     String subject = "Email Verification";
@@ -128,4 +146,7 @@ public class UserService implements UserDetailsService {
 
   }
 
+  public void updateUserRoles(User user) {
+      userRepository.updateUserRoles(user.getUsername(), user.getRoles());
+  }
 }

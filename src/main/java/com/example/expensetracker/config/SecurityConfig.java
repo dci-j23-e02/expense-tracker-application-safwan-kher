@@ -31,6 +31,7 @@ public class SecurityConfig {
             authorizeRequests -> authorizeRequests
                 .requestMatchers("/signup", "/login", "/verify", "/assign-admin").permitAll()
                 .requestMatchers("/currency-converter").hasRole("ADMIN")
+                .requestMatchers("/admin-home").hasRole("ADMIN")
                 .anyRequest().authenticated()
         )
         .formLogin(formLogin -> formLogin

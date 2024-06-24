@@ -4,6 +4,7 @@ package com.example.expensetracker.controllers;
 import com.example.expensetracker.models.User;
 import com.example.expensetracker.service.UserService;
 import jakarta.mail.search.SearchTerm;
+import java.security.Principal;
 import java.util.HashSet;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +22,18 @@ public class UserController {
 
 
   @GetMapping("/")
-  public String home(){
+  public String home(Principal principal){
+    User user = userService.findByUsername(principal.getName());
+    if(user.getRoles().contains("ROLE_ADMIN")){
+      return "redirect:/admin-home";
+    }
+
     return "home";
   }
-
+  @GetMapping("/admin-home")
+  public String adminHome(){
+    return "admin-home";// return the view directly
+  }
 
   @GetMapping("/login")
   public String login(Model model){
@@ -76,13 +85,17 @@ public class UserController {
     User user = userService.findByUsername(username);
     if(user != null){
       Set<String> roles = new HashSet<>(user.getRoles());
-      roles.add("ADMIN");
+      roles.add("ROLE_ADMIN");
       user.setRoles(roles);
-      userService.saveUser(user);
+      userService.updateUserRoles(user); // new added
+
+      // log role assignment
+      System.out.println("Roles assigned to user: "+ user.getRoles());
+
       model.addAttribute("successMessage", "Admin role assigned successfully.");
     }else{
       model.addAttribute("errorMessage", "User not found.");
     }
-    return "assign-admin";
+    return "redirect:/admin-home";
   }
 }

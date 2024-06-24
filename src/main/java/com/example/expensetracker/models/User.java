@@ -26,18 +26,21 @@ public class User {
   @Column(nullable = false)
   private boolean verified=false;
 
+@ManyToMany(fetch = FetchType.EAGER)
+@JoinTable(
+    name = "user-roles",
+    joinColumns = @JoinColumn(name="user_id"),
+    inverseJoinColumns = @JoinColumn(name = "role_id")
+)
+private Set<Role> roles;
 
-  @ElementCollection(fetch = FetchType.EAGER)
-  @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name ="user_id"))
-  @Column(name = "role")
-  private Set<String> roles;
 
   public User() {
   }
 
-  public User(Long id, String username, String email, String password,
-      Set<Expense> expenses, boolean verified, Set<String> roles) {
-    this.id = id;
+  public User(String username, String email, String password,
+      Set<Expense> expenses, boolean verified,
+      Set<Role> roles) {
     this.username = username;
     this.email = email;
     this.password = password;
@@ -46,8 +49,10 @@ public class User {
     this.roles = roles;
   }
 
-  public User(String username, String email, String password,
-      Set<Expense> expenses, boolean verified, Set<String> roles) {
+  public User(Long id, String username, String email, String password,
+      Set<Expense> expenses, boolean verified,
+      Set<Role> roles) {
+    this.id = id;
     this.username = username;
     this.email = email;
     this.password = password;
@@ -104,11 +109,11 @@ public class User {
     this.verified = verified;
   }
 
-  public Set<String> getRoles() {
+  public Set<Role> getRoles() {
     return roles;
   }
 
-  public void setRoles(Set<String> roles) {
+  public void setRoles(Set<Role> roles) {
     this.roles = roles;
   }
 }

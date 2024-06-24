@@ -1,6 +1,8 @@
 package com.example.expensetracker.service;
 
+import com.example.expensetracker.models.Role;
 import com.example.expensetracker.models.VerificationToken;
+import com.example.expensetracker.repositories.RoleRepository;
 import com.example.expensetracker.repositories.VerificationTokenRepository;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -27,13 +29,18 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 public class UserService implements UserDetailsService {
 
   @Autowired
+  private RoleRepository roleRepository;
+
+  @Autowired
   private UserRepository userRepository;
+
+  @Autowired
+  private VerificationTokenRepository tokenRepository;
+
 
   @Autowired
   private BCryptPasswordEncoder passwordEncoder;
 
-  @Autowired
-  private VerificationTokenRepository tokenRepository;
 
   @Autowired
   private JavaMailSender mailSender;
@@ -42,8 +49,15 @@ public class UserService implements UserDetailsService {
   @Transactional
   public boolean saveUser(User user){
     user.setPassword(passwordEncoder.encode(user.getPassword()));
-    Set<String> roles = new HashSet<>();
-    roles.add("ROLE_USER");
+    Set<Role> roles = new HashSet<>();
+    Role userRole;
+    userRole = roleRepository.findByName("ROLE_USER");
+    if(userRole == null){
+       userRole = new Role();
+      userRole.setName("ROLE_USER");
+      roleRepository.save(userRole);
+    }
+    roles.add(userRole);
     user.setRoles(roles);
    try{
      userRepository.save(user);
@@ -54,6 +68,11 @@ public class UserService implements UserDetailsService {
      return false;
    }
     return true;
+  }
+
+  @Transactional
+  public void updateUserRoles(User user) {
+    userRepository.updateUserRoles(user.getUsername(), user.getRoles());
   }
 
 
@@ -77,7 +96,7 @@ public class UserService implements UserDetailsService {
     // log user details:
     System.out.println("User found "+ user.getUsername()+
         " , Verified:"+user.isVerified() +
-        ",  Roles: "+ user.getRoles());
+        ",  Roles: "+ user.getRoles().size());
 //    .accountLocked(!user.isVerified()) : is alternative of the below
 //    if(!user.isVerified()){
 //      throw new UsernameNotFoundException("User email is not verified");
@@ -90,7 +109,9 @@ public class UserService implements UserDetailsService {
         .authorities(
             user.getRoles()
                 .stream()
-                .map(SimpleGrantedAuthority :: new)
+                .map(
+                    role -> new SimpleGrantedAuthority(role.getName())
+                )
                 .collect(Collectors.toList())
         ) // Convert roles to authorities
 
@@ -146,7 +167,5 @@ public class UserService implements UserDetailsService {
 
   }
 
-  public void updateUserRoles(User user) {
-      userRepository.updateUserRoles(user.getUsername(), user.getRoles());
-  }
+
 }

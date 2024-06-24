@@ -1,13 +1,9 @@
 package com.example.expensetracker.controllers;
 
-
-import com.example.expensetracker.models.User;
 import com.example.expensetracker.models.Role;
+import com.example.expensetracker.models.User;
 import com.example.expensetracker.service.UserService;
-import com.example.expensetracker.repositories.RoleRepository; // we might create in the future roleService class instead
-import java.security.Principal;
-import java.util.HashSet;
-import java.util.Set;
+import com.example.expensetracker.repositories.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,27 +11,22 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-
+import java.security.Principal;
+import java.util.HashSet;
+import java.util.Set;
 
 @Controller
 public class UserController {
-
   @Autowired
   private UserService userService;
 
   @Autowired
   private RoleRepository roleRepository;
 
-
   @GetMapping("/")
   public String home(Principal principal) {
     User user = userService.findByUsername(principal.getName());
-    boolean isAdmin = user.getRoles()
-        .stream()
-        .anyMatch(
-            role -> role.getName().equals("ROLE_ADMIN")
-        );
-    if (isAdmin) {
+    if (user.getRoles().stream().anyMatch(role -> role.getName().equals("ROLE_ADMIN"))) {
       return "redirect:/admin-home";
     }
     return "home";
@@ -83,22 +74,29 @@ public class UserController {
   public String assignAdminRole(String username, Model model) {
     User user = userService.findByUsername(username);
     if (user != null) {
-
       Set<Role> roles = new HashSet<>(user.getRoles());
-      Role adminRole;
-      adminRole = roleRepository.findByName("ROLE_ADMIN");
-      if(adminRole == null){
-        adminRole = new Role();
-        adminRole.setName("ROLE_ADMIN");
+      Role adminRole = roleRepository.findByName("ROLE_ADMIN");
+      if (adminRole == null) {
+        adminRole = new Role("ROLE_ADMIN");
         roleRepository.save(adminRole);
       }
       roles.add(adminRole);
       user.setRoles(roles);
-      userService.updateUserRoles(user);
+      adminRole.addUser(user); // Ensure bidirectional relationship
+      userService.updateUserRoles(user); // Ensure this method updates the user roles correctly
+
+      // Log role assignment
+      System.out.println("Roles assigned to user: " + user.getRoles());
+
       model.addAttribute("successMessage", "Admin role assigned successfully.");
     } else {
       model.addAttribute("errorMessage", "User not found.");
     }
     return "redirect:/";
+  }
+
+  @GetMapping("/admin-home")
+  public String adminHome() {
+    return "admin-home";
   }
 }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
   <title>Admin Home</title>
@@ -14,6 +14,12 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/expenses}">Expenses</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/assign-admin}">Assign Admin Role</a>
+        </li>
         <li class="nav-item">
           <a class="nav-link" th:href="@{/currency-converter}">Currency Converter</a>
         </li>
@@ -30,7 +36,9 @@
       <h1 class="mt-5">Welcome Admin</h1>
       <p class="lead">Manage your expenses efficiently and effectively.</p>
       <div class="mt-4">
-        <a th:href="@{/currency-converter}" class="btn btn-primary btn-lg">Use Currency Converter</a>
+        <a th:href="@{/expenses}" class="btn btn-primary btn-lg">View Expenses</a>
+        <a th:href="@{/expenses/add}" class="btn btn-success btn-lg">Add Expense</a>
+        <a th:href="@{/currency-converter}" class="btn btn-info btn-lg">Use Currency Converter</a>
       </div>
     </div>
   </div>

@@ -1,11 +1,11 @@
 package com.example.expensetracker.models;
 
 import jakarta.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
-
 @Entity
-@Table(name ="users")
+@Table(name = "users")
 public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -24,23 +24,22 @@ public class User {
   private Set<Expense> expenses;
 
   @Column(nullable = false)
-  private boolean verified=false;
+  private boolean verified = false;
 
-@ManyToMany(fetch = FetchType.EAGER)
-@JoinTable(
-    name = "user-roles",
-    joinColumns = @JoinColumn(name="user_id"),
-    inverseJoinColumns = @JoinColumn(name = "role_id")
-)
-private Set<Role> roles;
+  @ManyToMany(fetch = FetchType.EAGER)
+  @JoinTable(
+      name = "user_roles",
+      joinColumns = @JoinColumn(name = "user_id"),
+      inverseJoinColumns = @JoinColumn(name = "role_id")
+  )
+  private Set<Role> roles = new HashSet<>();
 
-
+  // Getters and setters
   public User() {
   }
 
-  public User(String username, String email, String password,
-      Set<Expense> expenses, boolean verified,
-      Set<Role> roles) {
+  public User(Long id, String username, String email, String password, Set<Expense> expenses, boolean verified, Set<Role> roles) {
+    this.id = id;
     this.username = username;
     this.email = email;
     this.password = password;
@@ -49,10 +48,7 @@ private Set<Role> roles;
     this.roles = roles;
   }
 
-  public User(Long id, String username, String email, String password,
-      Set<Expense> expenses, boolean verified,
-      Set<Role> roles) {
-    this.id = id;
+  public User(String username, String email, String password, Set<Expense> expenses, boolean verified, Set<Role> roles) {
     this.username = username;
     this.email = email;
     this.password = password;
@@ -115,5 +111,15 @@ private Set<Role> roles;
 
   public void setRoles(Set<Role> roles) {
     this.roles = roles;
+  }
+
+  public void addRole(Role role) {
+    this.roles.add(role);
+    role.getUsers().add(this);
+  }
+
+  public void removeRole(Role role) {
+    this.roles.remove(role);
+    role.getUsers().remove(this);
   }
 }
